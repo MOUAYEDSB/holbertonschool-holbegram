@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:holbegram/widgets/text_field.dart'; // Import the TextFieldInput widget
+import 'signup_screen.dart'; // Import SignUpScreen
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
@@ -135,7 +136,11 @@ class _LoginScreenState extends State<LoginScreen> {
                     const Text("Don't have an account?"),
                     TextButton(
                       onPressed: () {
-                        // To be implemented
+                        // Navigate to Sign Up Screen
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => const SignUpScreen()),
+                        );
                       },
                       child: const Text(
                         'Sign up',
