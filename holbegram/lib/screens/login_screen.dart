@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:holbegram/widgets/text_field.dart'; // Import the TextFieldInput widget
+import 'package:firebase_auth/firebase_auth.dart'; // Import Firebase Auth
 import 'signup_screen.dart'; // Import SignUpScreen
 
 class LoginScreen extends StatefulWidget {
-  const LoginScreen({Key? key}) : super(key: key);
+  const LoginScreen({super.key}); // Use super parameters
 
   @override
   State<LoginScreen> createState() => _LoginScreenState();
@@ -13,6 +14,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   bool _passwordVisible = true;
+  final FirebaseAuth _auth = FirebaseAuth.instance; // Initialize Firebase Auth
 
   @override
   void initState() {
@@ -27,6 +29,26 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
+  Future<void> login() async {
+    // Implement your login logic here
+    String email = emailController.text;
+    String password = passwordController.text;
+
+    try {
+      await _auth.signInWithEmailAndPassword(email: email, password: password);
+      if (!mounted) return; // Check if the widget is still mounted
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Login successful')),
+      );
+      // Navigate to the next screen or perform any other action
+    } catch (e) {
+      if (!mounted) return; // Check if the widget is still mounted
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Login failed: $e')),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -38,8 +60,6 @@ class _LoginScreenState extends State<LoginScreen> {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               const SizedBox(height: 28),
-
-              // App name using Billabong font
               const Text(
                 'Holbegram',
                 style: TextStyle(
@@ -47,27 +67,19 @@ class _LoginScreenState extends State<LoginScreen> {
                   fontSize: 50,
                 ),
               ),
-
-              // Logo image
               Image.asset(
                 'assets/images/logo.png', // Replace with your logo file path
                 width: 80,
                 height: 60,
               ),
-
               const SizedBox(height: 28),
-
-              // Email TextFieldInput
               TextFieldInput(
                 controller: emailController,
                 isPassword: false,
                 hintText: 'Email',
                 keyboardType: TextInputType.emailAddress,
               ),
-
               const SizedBox(height: 24),
-
-              // Password TextFieldInput with suffix icon for visibility toggle
               TextFieldInput(
                 controller: passwordController,
                 isPassword: !_passwordVisible,
@@ -85,32 +97,24 @@ class _LoginScreenState extends State<LoginScreen> {
                   },
                 ),
               ),
-
               const SizedBox(height: 28),
-
-              // Login button
               SizedBox(
                 height: 48,
                 width: double.infinity,
                 child: ElevatedButton(
                   style: ButtonStyle(
-                    backgroundColor: MaterialStateProperty.all(
+                    backgroundColor: WidgetStateProperty.all( // Use WidgetStateProperty instead
                       const Color.fromARGB(218, 226, 37, 24),
                     ),
                   ),
-                  onPressed: () {
-                    // To be implemented
-                  },
+                  onPressed: login, // Call the login function here
                   child: const Text(
                     'Log in',
                     style: TextStyle(color: Colors.white),
                   ),
                 ),
               ),
-
               const SizedBox(height: 24),
-
-              // Forgot your login details
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: const [
@@ -122,12 +126,8 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                 ],
               ),
-
               const SizedBox(height: 24),
-
-              // Divider
               const Divider(thickness: 2),
-
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 12),
                 child: Row(
@@ -136,7 +136,6 @@ class _LoginScreenState extends State<LoginScreen> {
                     const Text("Don't have an account?"),
                     TextButton(
                       onPressed: () {
-                        // Navigate to Sign Up Screen
                         Navigator.push(
                           context,
                           MaterialPageRoute(builder: (context) => const SignUpScreen()),
@@ -153,10 +152,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   ],
                 ),
               ),
-
               const SizedBox(height: 10),
-
-              // OR divider
               Row(
                 children: [
                   const Flexible(
@@ -173,10 +169,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                 ],
               ),
-
               const SizedBox(height: 10),
-
-              // Sign in with Google
               Row(
                 mainAxisSize: MainAxisSize.min,
                 mainAxisAlignment: MainAxisAlignment.center,
