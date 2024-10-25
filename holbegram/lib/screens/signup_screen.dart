@@ -4,9 +4,10 @@ import 'package:holbegram/widgets/text_field.dart';
 import 'login_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'upload_image_screen.dart'; // Import the upload image screen
 
 class SignUpScreen extends StatefulWidget {
-  const SignUpScreen({super.key}); // Use super parameters
+  const SignUpScreen({super.key});
 
   @override
   State<SignUpScreen> createState() => _SignUpScreenState();
@@ -132,7 +133,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 width: double.infinity,
                 child: ElevatedButton(
                   style: ButtonStyle(
-                    backgroundColor: WidgetStateProperty.all(
+                    backgroundColor: MaterialStateProperty.all(
                       const Color.fromARGB(218, 226, 37, 24),
                     ),
                   ),
@@ -143,16 +144,23 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       username: usernameController.text,
                     );
 
-                    if (!mounted) return; // Check if the widget is still mounted
+                    if (!mounted) return;
 
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(content: Text(result)),
                     );
 
                     if (result == 'success') {
+                      // Navigate to AddPicture page and pass data
                       Navigator.pushReplacement(
                         context,
-                        MaterialPageRoute(builder: (context) => const LoginScreen()),
+                        MaterialPageRoute(
+                          builder: (context) => AddPicture(
+                            email: emailController.text,
+                            password: passwordController.text,
+                            username: usernameController.text,
+                          ),
+                        ),
                       );
                     }
                   },

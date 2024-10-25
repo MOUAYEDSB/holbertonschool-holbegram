@@ -2,7 +2,7 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 // Ensure UserStorage is implemented correctly and publicly accessible
-// import './methods/user_storage.dart';
+import './auth/methods/user_storage.dart';
 
 class AddPicture extends StatefulWidget {
   final String email;
@@ -10,39 +10,39 @@ class AddPicture extends StatefulWidget {
   final String username;
 
   const AddPicture({
-    super.key, // use super.key for key parameter
+    Key? key,
     required this.email,
     required this.password,
     required this.username,
-  });
+  }) : super(key: key);
 
   @override
-  AddPictureState createState() => AddPictureState(); // remove private type if needed for accessibility
+  AddPictureState createState() => AddPictureState();
 }
 
 class AddPictureState extends State<AddPicture> {
   Uint8List? _image;
   final ImagePicker _picker = ImagePicker();
 
-  // Function to pick image
+  // Function to pick image from gallery
   Future<void> _pickImage() async {
-    final XFile? pickedFile = await _picker.pickImage(source: ImageSource.gallery);
-    if (pickedFile != null) {
-      final Uint8List imageBytes = await pickedFile.readAsBytes();
-      setState(() {
-        _image = imageBytes;
-      });
+    try {
+      final XFile? pickedFile = await _picker.pickImage(source: ImageSource.gallery);
+      if (pickedFile != null) {
+        final Uint8List imageBytes = await pickedFile.readAsBytes();
+        setState(() {
+          _image = imageBytes;
+        });
+      }
+    } catch (e) {
+      _showSnackBar("Error picking image: $e");
     }
   }
 
   // Function to upload image
   Future<void> _uploadImage() async {
     if (_image == null) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Please select an image to upload.")),
-        );
-      }
+      _showSnackBar("Please select an image to upload.");
       return;
     }
 
@@ -53,17 +53,16 @@ class AddPictureState extends State<AddPicture> {
       //   email: widget.email,
       //   username: widget.username,
       // );
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Image uploaded successfully!")),
-        );
-      }
+      _showSnackBar("Image uploaded successfully!");
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Error uploading image: $e")),
-        );
-      }
+      _showSnackBar("Error uploading image: $e");
+    }
+  }
+
+  // Helper function to show SnackBar
+  void _showSnackBar(String message) {
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
     }
   }
 
