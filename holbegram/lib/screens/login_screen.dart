@@ -30,7 +30,6 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Future<void> login() async {
-    // Implement your login logic here
     String email = emailController.text;
     String password = passwordController.text;
 
@@ -44,7 +43,7 @@ class _LoginScreenState extends State<LoginScreen> {
     } catch (e) {
       if (!mounted) return; // Check if the widget is still mounted
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Login failed: $e')),
+        SnackBar(content: Text('Login failed: ${e.toString()}')), // Enhanced error message
       );
     }
   }
@@ -103,7 +102,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 width: double.infinity,
                 child: ElevatedButton(
                   style: ButtonStyle(
-                    backgroundColor: WidgetStateProperty.all( // Use WidgetStateProperty instead
+                    backgroundColor: MaterialStateProperty.all(
                       const Color.fromARGB(218, 226, 37, 24),
                     ),
                   ),

@@ -30,16 +30,16 @@ class Users {
     var snapshot = snap.data() as Map<String, dynamic>;
 
     return Users(
-      uid: snapshot['uid'],
-      email: snapshot['email'],
-      username: snapshot['username'],
-      bio: snapshot['bio'],
-      photoUrl: snapshot['photoUrl'],
-      followers: List<dynamic>.from(snapshot['followers']),
-      following: List<dynamic>.from(snapshot['following']),
-      posts: List<dynamic>.from(snapshot['posts']),
-      saved: List<dynamic>.from(snapshot['saved']),
-      searchKey: snapshot['searchKey'],
+      uid: snapshot['uid'] ?? '',
+      email: snapshot['email'] ?? '',
+      username: snapshot['username'] ?? '',
+      bio: snapshot['bio'] ?? '',
+      photoUrl: snapshot['photoUrl'] ?? '',
+      followers: List<dynamic>.from(snapshot['followers'] ?? []),
+      following: List<dynamic>.from(snapshot['following'] ?? []),
+      posts: List<dynamic>.from(snapshot['posts'] ?? []),
+      saved: List<dynamic>.from(snapshot['saved'] ?? []),
+      searchKey: snapshot['searchKey'] ?? '',
     );
   }
 

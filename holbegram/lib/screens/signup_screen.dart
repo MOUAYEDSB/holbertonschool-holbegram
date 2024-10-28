@@ -4,7 +4,6 @@ import 'package:holbegram/widgets/text_field.dart';
 import 'login_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'upload_image_screen.dart'; // Import the upload image screen
 
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
@@ -18,12 +17,13 @@ class _SignUpScreenState extends State<SignUpScreen> {
   final TextEditingController usernameController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   final TextEditingController passwordConfirmController = TextEditingController();
+  
   bool _passwordVisible = true;
+  bool _isLoading = false;
 
   @override
   void initState() {
     super.initState();
-    _passwordVisible = true;
   }
 
   @override
@@ -39,10 +39,19 @@ class _SignUpScreenState extends State<SignUpScreen> {
     required String email,
     required String password,
     required String username,
-    Uint8List? file,
   }) async {
     if (email.isEmpty || password.isEmpty || username.isEmpty) {
       return 'Please fill all the fields';
+    }
+
+    // Basic email validation
+    if (!RegExp(r"^[a-zA-Z0-9.a-zA-Z0-9!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$").hasMatch(email)) {
+      return 'Please enter a valid email address';
+    }
+
+    // Password length validation
+    if (password.length < 6) {
+      return 'Password must be at least 6 characters long';
     }
 
     try {
@@ -50,6 +59,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
           .createUserWithEmailAndPassword(email: email, password: password);
       User? user = userCredential.user;
 
+      // Add user details to Firestore under the "users" collection
       await FirebaseFirestore.instance.collection("users").doc(user!.uid).set({
         'username': username,
         'email': email,
@@ -57,8 +67,27 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
       return 'success';
     } catch (e) {
-      return e.toString();
+      return e.toString(); // Return error message
     }
+  }
+
+  Widget buildPasswordField(TextEditingController controller, String hint) {
+    return TextFieldInput(
+      controller: controller,
+      isPassword: !_passwordVisible,
+      hintText: hint,
+      keyboardType: TextInputType.visiblePassword,
+      suffixIcon: IconButton(
+        icon: Icon(
+          _passwordVisible ? Icons.visibility : Icons.visibility_off,
+        ),
+        onPressed: () {
+          setState(() {
+            _passwordVisible = !_passwordVisible;
+          });
+        },
+      ),
+    );
   }
 
   @override
@@ -94,39 +123,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 keyboardType: TextInputType.text,
               ),
               const SizedBox(height: 24),
-              TextFieldInput(
-                controller: passwordController,
-                isPassword: !_passwordVisible,
-                hintText: 'Password',
-                keyboardType: TextInputType.visiblePassword,
-                suffixIcon: IconButton(
-                  icon: Icon(
-                    _passwordVisible ? Icons.visibility : Icons.visibility_off,
-                  ),
-                  onPressed: () {
-                    setState(() {
-                      _passwordVisible = !_passwordVisible;
-                    });
-                  },
-                ),
-              ),
+              buildPasswordField(passwordController, 'Password'),
               const SizedBox(height: 24),
-              TextFieldInput(
-                controller: passwordConfirmController,
-                isPassword: !_passwordVisible,
-                hintText: 'Confirm Password',
-                keyboardType: TextInputType.visiblePassword,
-                suffixIcon: IconButton(
-                  icon: Icon(
-                    _passwordVisible ? Icons.visibility : Icons.visibility_off,
-                  ),
-                  onPressed: () {
-                    setState(() {
-                      _passwordVisible = !_passwordVisible;
-                    });
-                  },
-                ),
-              ),
+              buildPasswordField(passwordConfirmController, 'Confirm Password'),
               const SizedBox(height: 28),
               SizedBox(
                 height: 48,
@@ -137,37 +136,55 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       const Color.fromARGB(218, 226, 37, 24),
                     ),
                   ),
-                  onPressed: () async {
-                    String result = await signUpUser(
-                      email: emailController.text,
-                      password: passwordController.text,
-                      username: usernameController.text,
-                    );
+                  onPressed: _isLoading
+                      ? null // Disable button when loading
+                      : () async {
+                          // Ensure passwords match
+                          if (passwordController.text != passwordConfirmController.text) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text("Passwords do not match")),
+                            );
+                            return;
+                          }
 
-                    if (!mounted) return;
+                          setState(() {
+                            _isLoading = true; // Start loading
+                          });
 
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text(result)),
-                    );
-
-                    if (result == 'success') {
-                      // Navigate to AddPicture page and pass data
-                      Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => AddPicture(
+                          // Attempt to sign up user
+                          String result = await signUpUser(
                             email: emailController.text,
                             password: passwordController.text,
                             username: usernameController.text,
-                          ),
+                          );
+
+                          setState(() {
+                            _isLoading = false; // Stop loading
+                          });
+
+                          // Show result as a SnackBar
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text(result)),
+                          );
+
+                          // Navigate to login screen on success
+                          if (result == 'success') {
+                            Navigator.pushReplacement(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const LoginScreen(),
+                              ),
+                            );
+                          }
+                        },
+                  child: _isLoading
+                      ? const CircularProgressIndicator(
+                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                        )
+                      : const Text(
+                          'Sign up',
+                          style: TextStyle(color: Colors.white),
                         ),
-                      );
-                    }
-                  },
-                  child: const Text(
-                    'Sign up',
-                    style: TextStyle(color: Colors.white),
-                  ),
                 ),
               ),
               const SizedBox(height: 24),
