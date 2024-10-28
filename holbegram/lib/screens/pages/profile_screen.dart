@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
-class ProfileScreen extends StatelessWidget {
+class Profile extends StatelessWidget {
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
   // Fetch user details
